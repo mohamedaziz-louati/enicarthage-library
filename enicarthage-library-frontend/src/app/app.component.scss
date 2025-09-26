@@ -37,23 +37,39 @@
   min-height: 100vh;
 }
 
-// Ensure sidebar is always visible
+// Ensure sidebar is positioned properly and doesn't interfere with scrolling
 .sidebar {
-  transform: translateX(0) !important;
+  position: fixed;
+  top: 64px; /* Header height */
+  left: 0;
+  height: calc(100vh - 64px);
+  width: 280px;
+  background: linear-gradient(180deg, #2c3e50 0%, #1a1a1a 100%);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  overflow-y: auto;
+  transform: translateX(0);
+  
+  &.open {
+    transform: translateX(0);
+  }
+  
+  &.closed {
+    transform: translateX(-100%);
+  }
+  
+  @media (max-width: 768px) {
+    transform: translateX(-100%);
+    
+    &.open {
+      transform: translateX(0);
+    }
+  }
 }
 
 @media (max-width: 768px) {
   .content-area.with-sidebar {
     margin-left: 0;
     padding: 16px;
-  }
-  
-  .sidebar {
-    transform: translateX(-100%) !important;
-    
-    &.open {
-      transform: translateX(0) !important;
-    }
   }
 }
