@@ -1,9 +1,9 @@
 <div class="user-container">
-  <h1>My Profile</h1>
+  <h1>My Account</h1>
 
   <div class="tabs">
-    <div class="tab" [class.active]="activeTab==='info'" (click)="showTab('info')">My Info</div>
-    <div class="tab" [class.active]="activeTab==='books'" (click)="showTab('books')">Book Reservations</div>
+    <div class="tab" [class.active]="activeTab==='info'" (click)="showTab('info')">Profile</div>
+    <div class="tab" [class.active]="activeTab==='books'" (click)="showTab('books')">My Books</div>
     <div class="tab" [class.active]="activeTab==='events'" (click)="showTab('events')">My Events</div>
   </div>
 
@@ -21,7 +21,7 @@
   </div>
 
   <div class="user-section" *ngIf="activeTab==='books'">
-    <h2>My Borrowings</h2>
+    <h2>My Books</h2>
     <div class="loading" *ngIf="isLoadingBooks"><div class="loading-spinner">Loading...</div></div>
     <table class="books-table" *ngIf="!isLoadingBooks">
       <thead>
