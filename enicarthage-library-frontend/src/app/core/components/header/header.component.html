@@ -1,28 +1,10 @@
 <mat-toolbar color="primary" class="header-toolbar">
   <div class="header-content">
     <div class="header-left">
-      <button mat-icon-button (click)="toggleSidebar()" class="menu-button">
-        <mat-icon>menu</mat-icon>
-      </button>
       <span class="logo">
         <mat-icon class="logo-icon">local_library</mat-icon>
         ENICARTHAGE Library
       </span>
-    </div>
-
-    <div class="header-center">
-      <div class="search-container">
-        <input 
-          type="text" 
-          placeholder="Search books, authors, ISBN..." 
-          class="search-input"
-          #searchInput
-          (keyup.enter)="onSearch(searchInput.value)"
-        >
-        <button mat-icon-button (click)="onSearch(searchInput.value)" class="search-button">
-          <mat-icon>search</mat-icon>
-        </button>
-      </div>
     </div>
 
     <div class="header-right">

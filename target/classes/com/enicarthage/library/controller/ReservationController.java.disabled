@@ -1,0 +1,91 @@
+package com.enicarthage.library.controller;
+
+import com.enicarthage.library.entity.Reservation;
+import com.enicarthage.library.entity.User;
+import com.enicarthage.library.service.ReservationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/reservations")
+@CrossOrigin(origins = "*")
+public class ReservationController {
+
+    @Autowired private ReservationService reservationService;
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('LIBRARIAN')")
+    public ResponseEntity<Page<Reservation>> getAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+            Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(reservationService.getAllReservations(pageable));
+    }
+
+    @GetMapping("/my-reservations")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('FACULTY')")
+    public ResponseEntity<List<Reservation>> myReservations() {
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(reservationService.getReservationsByUser(currentUser.getId()));
+    }
+
+    @PostMapping("/book/{bookId}")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('FACULTY')")
+    public ResponseEntity<?> reserveBook(@PathVariable Long bookId) {
+        try {
+            User currentUser = getCurrentUser();
+            Reservation reservation = reservationService.reserveBook(bookId, currentUser.getId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Book reserved successfully");
+            response.put("reservation", reservation);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('FACULTY')")
+    public ResponseEntity<?> cancel(@PathVariable Long id) {
+        try {
+            User currentUser = getCurrentUser();
+            Reservation reservation = reservationService.cancelReservation(id, currentUser.getId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Reservation cancelled");
+            response.put("reservation", reservation);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
+            throw new RuntimeException("User not authenticated");
+        }
+        return (User) authentication.getPrincipal();
+    }
+}
+

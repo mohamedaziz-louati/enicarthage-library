@@ -57,4 +57,28 @@ export class BookService {
       params: new HttpParams().set('status', status)
     });
   }
+
+  borrowBook(id: number): Observable<any> {
+    return this.http.post(`${this.API}/${id}/borrow`, {});
+  }
+
+  reserveBook(id: number): Observable<any> {
+    return this.http.post(`${this.API}/${id}/reserve`, {});
+  }
+
+  returnBook(id: number): Observable<any> {
+    return this.http.post(`${this.API}/${id}/return`, {});
+  }
+
+  createBook(book: Partial<Book>): Observable<Book> {
+    return this.http.post<Book>(this.API, book);
+  }
+
+  updateBook(id: number, book: Partial<Book>): Observable<Book> {
+    return this.http.put<Book>(`${this.API}/${id}`, book);
+  }
+
+  deleteBook(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API}/${id}`);
+  }
 }

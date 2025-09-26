@@ -93,6 +93,10 @@ public class BookService {
         return bookRepository.findByCategory(category);
     }
     
+    public Page<Book> getBooksByCategory(Book.BookCategory category, Pageable pageable) {
+        return bookRepository.findByCategory(category, pageable);
+    }
+    
     public List<Book> getAvailableBooks() {
         return bookRepository.findAvailableBooks();
     }
@@ -127,5 +131,9 @@ public class BookService {
         book.setAvailableCopies(availableCopies);
         book.setUpdatedAt(LocalDateTime.now());
         return bookRepository.save(book);
+    }
+    
+    public List<Book> getBooksByStatus(Book.BookStatus status) {
+        return bookRepository.findByStatus(status);
     }
 }

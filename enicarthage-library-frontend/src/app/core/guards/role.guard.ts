@@ -15,12 +15,15 @@ export const RoleGuard: CanActivateFn = (route, state) => {
   return authService.currentUser$.pipe(
     take(1),
     map(user => {
-      if (user && authService.hasAnyRole(requiredRoles)) {
-        return true;
-      } else {
-        router.navigate(['/dashboard']);
+      if (!user) {
+        router.navigate(['/login']);
         return false;
       }
+      if (authService.hasAnyRole(requiredRoles)) {
+        return true;
+      }
+      router.navigate(['/dashboard']);
+      return false;
     })
   );
 };

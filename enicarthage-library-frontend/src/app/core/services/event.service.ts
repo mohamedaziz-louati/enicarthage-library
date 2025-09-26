@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 
 export interface EventItem {
   id: number;
-  name: string;
+  title: string;
   description?: string;
   location?: string;
   startDate: string;
@@ -78,5 +78,9 @@ export class EventService {
 
   unregister(id: number): Observable<any> {
     return this.http.delete(`${this.API}/${id}/unregister`);
+  }
+
+  myRegistrations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/my-registrations`);
   }
 }

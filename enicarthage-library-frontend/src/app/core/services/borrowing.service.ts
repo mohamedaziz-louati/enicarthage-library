@@ -5,9 +5,10 @@ import { environment } from '../../../environments/environment';
 
 export interface BorrowingItem {
   id: number;
-  bookId: number;
-  userId: number;
+  book?: { id: number; title?: string; author?: string };
+  user?: { id: number; username?: string; firstName?: string; lastName?: string };
   borrowDate: string;
+  dueDate?: string;
   returnDate?: string;
   status: 'ACTIVE' | 'OVERDUE' | 'RETURNED';
   fineAmount?: number;
@@ -52,8 +53,8 @@ export class BorrowingService {
     return this.http.get<BorrowingItem[]>(`${this.API}/active`);
   }
 
-  borrow(bookId: number, userId: number): Observable<any> {
-    const params = new HttpParams().set('bookId', bookId).set('userId', userId);
+  borrow(bookId: number): Observable<any> {
+    const params = new HttpParams().set('bookId', bookId);
     return this.http.post(`${this.API}/borrow`, null, { params });
   }
 

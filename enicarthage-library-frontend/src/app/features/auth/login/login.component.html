@@ -1,0 +1,69 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo-section">
+        <mat-icon class="logo-icon">local_library</mat-icon>
+        <h1 class="app-title">ENICARTHAGE Library</h1>
+        <p class="subtitle">Access your digital library</p>
+      </div>
+    </div>
+
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Username</mat-label>
+        <input matInput 
+               type="text" 
+               placeholder="Enter your username"
+               formControlName="username"
+               autocomplete="username">
+        <mat-icon matSuffix>person</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Password</mat-label>
+        <input matInput 
+               type="password" 
+               placeholder="Enter your password"
+               formControlName="password"
+               autocomplete="current-password">
+        <mat-icon matSuffix>lock</mat-icon>
+      </mat-form-field>
+
+      <div class="form-options">
+        <mat-checkbox formControlName="rememberMe" class="remember-checkbox">
+          Remember me
+        </mat-checkbox>
+        <a class="forgot-link" href="#" (click)="forgotPassword()">Forgot password?</a>
+      </div>
+
+      <button mat-raised-button 
+              type="submit" 
+              color="primary"
+              class="login-button"
+              [disabled]="loginForm.invalid || isLoading">
+        <mat-icon *ngIf="!isLoading">login</mat-icon>
+        <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+        {{ isLoading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="divider-section">
+      <div class="divider-line"></div>
+      <span class="divider-text">OR</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="signup-section">
+      <p class="signup-text">
+        Don't have an account? 
+        <a class="signup-link" routerLink="/register" (click)="navigateToRegister($event)">Create one now</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="background-decoration">
+  <div class="decoration-circle circle-1"></div>
+  <div class="decoration-circle circle-2"></div>
+  <div class="decoration-circle circle-3"></div>
+</div>

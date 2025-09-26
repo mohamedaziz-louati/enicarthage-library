@@ -12,6 +12,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Book, BookCategory, BookStatus } from '../../core/models/book.model';
 import { FormsModule } from '@angular/forms';
 import { BookService, PagedResponse } from '../../core/services/book.service';
+import { AuthService } from '../../core/services/auth.service';
+import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-books',
@@ -33,6 +36,8 @@ import { BookService, PagedResponse } from '../../core/services/book.service';
   styleUrls: ['./books.component.scss']
 })
 export class BooksComponent implements OnInit {
+  isAdmin = false;
+  isAuthenticated = false;
   books: Book[] = [];
   filteredBooks: Book[] = [];
   isLoading = false;
@@ -48,10 +53,29 @@ export class BooksComponent implements OnInit {
   // Categories for filter
   categories = Object.values(BookCategory);
   statuses = Object.values(BookStatus);
+  newBook: Partial<Book> = {
+    title: '',
+    author: '',
+    publisher: '',
+    publicationYear: new Date().getFullYear(),
+    category: BookCategory.FICTION,
+    description: '',
+    totalCopies: 1,
+    availableCopies: 1
+  };
 
-  constructor(private bookService: BookService) {}
+  constructor(
+    private bookService: BookService,
+    private authService: AuthService,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit() {
+    this.authService.currentUser$.subscribe(user => {
+      this.isAuthenticated = !!user;
+      this.isAdmin = !!user && ['ADMIN', 'LIBRARIAN'].includes(user.role as any);
+    });
     this.loadBooks();
   }
 
@@ -136,12 +160,64 @@ export class BooksComponent implements OnInit {
   }
 
   borrowBook(book: Book) {
-    // Implement borrow functionality
-    console.log('Borrowing book:', book.title);
+    if (!this.isAuthenticated) {
+      this.snackBar.open('Please login to borrow books', 'Close', { duration: 2500 });
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.bookService.borrowBook(book.id).subscribe({
+      next: () => {
+        this.snackBar.open('Book borrowed successfully', 'Close', { duration: 2500 });
+        this.loadBooks(); // Refresh the book list
+      },
+      error: (error) => {
+        this.snackBar.open(error?.error?.error || 'Borrow failed', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   reserveBook(book: Book) {
-    // Implement reserve functionality
-    console.log('Reserving book:', book.title);
+    if (!this.isAuthenticated) {
+      this.snackBar.open('Please login to reserve books', 'Close', { duration: 2500 });
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.bookService.reserveBook(book.id).subscribe({
+      next: () => {
+        this.snackBar.open('Book reserved successfully', 'Close', { duration: 2500 });
+        this.loadBooks(); // Refresh the book list
+      },
+      error: (error) => {
+        this.snackBar.open(error?.error?.error || 'Reservation failed', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  deleteBook(book: Book): void {
+    if (!this.isAdmin) return;
+    if (!confirm(`Delete "${book.title}"?`)) return;
+    this.bookService.deleteBook(book.id).subscribe({
+      next: () => this.loadBooks()
+    });
+  }
+
+  createBook(): void {
+    if (!this.isAdmin) return;
+    if (!this.newBook.title || !this.newBook.author || !this.newBook.publisher || !this.newBook.description) return;
+    this.bookService.createBook(this.newBook).subscribe({
+      next: () => {
+        this.newBook = {
+          title: '',
+          author: '',
+          publisher: '',
+          publicationYear: new Date().getFullYear(),
+          category: BookCategory.FICTION,
+          description: '',
+          totalCopies: 1,
+          availableCopies: 1
+        };
+        this.loadBooks();
+      }
+    });
   }
 }

@@ -26,7 +26,8 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
     
     List<BookReview> findByRating(Integer rating);
     
-    List<BookReview> findByBookAndRating(Book book, Integer rating);
+    @Query("SELECT r FROM BookReview r WHERE r.book = :book AND r.rating = :rating")
+    List<BookReview> findByBookAndRating(@Param("book") Book book, @Param("rating") Integer rating);
     
     List<BookReview> findByIsVerified(Boolean isVerified);
     
@@ -42,9 +43,6 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
     
     @Query("SELECT AVG(r.rating) FROM BookReview r WHERE r.book = :book")
     Double getAverageRatingByBook(@Param("book") Book book);
-    
-    @Query("SELECT r FROM BookReview r WHERE r.book = :book AND r.rating = :rating")
-    List<BookReview> findByBookAndRating(@Param("book") Book book, @Param("rating") Integer rating);
     
     @Query("SELECT r FROM BookReview r WHERE r.createdAt BETWEEN :startDate AND :endDate")
     List<BookReview> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);

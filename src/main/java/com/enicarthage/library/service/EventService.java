@@ -1,8 +1,10 @@
 package com.enicarthage.library.service;
 
 import com.enicarthage.library.entity.Event;
+import com.enicarthage.library.entity.EventRegistration;
 import com.enicarthage.library.entity.User;
 import com.enicarthage.library.repository.EventRepository;
+import com.enicarthage.library.repository.EventRegistrationRepository;
 import com.enicarthage.library.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,9 @@ public class EventService {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EventRegistrationRepository eventRegistrationRepository;
     
     public Event createEvent(Event event) {
         // Validate event dates
@@ -149,21 +154,41 @@ public class EventService {
             throw new RuntimeException("Event has reached maximum attendees");
         }
         
-        // Check if user is already registered (this would need a separate EventRegistration entity)
-        // For now, we'll just increment the attendee count
-        event.setCurrentAttendees(event.getCurrentAttendees() + 1);
+        if (eventRegistrationRepository.existsByUserAndEvent(user, event)) {
+            throw new RuntimeException("You are already registered for this event");
+        }
+
+        EventRegistration registration = new EventRegistration();
+        registration.setUser(user);
+        registration.setEvent(event);
+        eventRegistrationRepository.save(registration);
+
+        event.setCurrentAttendees((event.getCurrentAttendees() == null ? 0 : event.getCurrentAttendees()) + 1);
         eventRepository.save(event);
     }
     
     public void unregisterFromEvent(Long eventId, Long userId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
-        
-        // Decrement attendee count (this would need proper tracking in a real implementation)
-        if (event.getCurrentAttendees() > 0) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        EventRegistration registration = eventRegistrationRepository.findByUserAndEvent(user, event)
+                .orElseThrow(() -> new RuntimeException("You are not registered for this event"));
+
+        eventRegistrationRepository.delete(registration);
+
+        if (event.getCurrentAttendees() != null && event.getCurrentAttendees() > 0) {
             event.setCurrentAttendees(event.getCurrentAttendees() - 1);
-            eventRepository.save(event);
         }
+        eventRepository.save(event);
+    }
+
+    public List<EventRegistration> getRegistrationsByUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return eventRegistrationRepository.findByUser(user);
     }
     
     public Map<String, Object> getEventStatistics() {

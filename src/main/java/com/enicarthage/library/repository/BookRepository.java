@@ -19,20 +19,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     List<Book> findByIsbn(String isbn);
     
-    List<Book> findByCategory(Book.BookCategory category);
-    
-    List<Book> findByStatus(Book.BookStatus status);
-    
-    List<Book> findByPublisherContainingIgnoreCase(String publisher);
-    
     @Query("SELECT b FROM Book b WHERE b.title LIKE %:searchTerm% OR b.author LIKE %:searchTerm% OR b.isbn LIKE %:searchTerm%")
     List<Book> findBySearchTerm(@Param("searchTerm") String searchTerm);
     
     @Query("SELECT b FROM Book b WHERE b.availableCopies > 0")
     List<Book> findAvailableBooks();
-    
-    @Query("SELECT b FROM Book b WHERE b.availableCopies = 0")
-    List<Book> findUnavailableBooks();
     
     @Query("SELECT b FROM Book b WHERE b.publicationYear = :year")
     List<Book> findByPublicationYear(@Param("year") Integer year);
@@ -46,12 +37,19 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.category = :category AND b.availableCopies > 0")
     List<Book> findAvailableBooksByCategory(@Param("category") Book.BookCategory category);
     
+    @Query("SELECT b FROM Book b WHERE b.status = :status")
+    List<Book> findByStatus(@Param("status") Book.BookStatus status);
+    
     Page<Book> findByTitleContainingIgnoreCase(String title, Pageable pageable);
     
     Page<Book> findByAuthorContainingIgnoreCase(String author, Pageable pageable);
     
     Page<Book> findByCategory(Book.BookCategory category, Pageable pageable);
     
-    @Query("SELECT b FROM Book b WHERE b.title LIKE %:searchTerm% OR b.author LIKE %:searchTerm% OR b.isbn LIKE %:searchTerm%")
+    List<Book> findByCategory(Book.BookCategory category);
+    
+    Page<Book> findByStatus(Book.BookStatus status, Pageable pageable);
+    
+    @Query("SELECT b FROM Book b WHERE (b.title LIKE %:searchTerm% OR b.author LIKE %:searchTerm% OR b.isbn LIKE %:searchTerm%)")
     Page<Book> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
 }

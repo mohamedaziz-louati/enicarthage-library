@@ -1,13 +1,10 @@
 <div class="app-container">
-  <app-header></app-header>
+  <app-header *ngIf="!isAuthRoute()"></app-header>
   
-  <div class="main-content with-sidebar">
-    <app-sidebar></app-sidebar>
-    
-    <main class="content-area">
+  <div class="main-content" [ngClass]="{'full-width': isAuthRoute(), 'with-header': !isAuthRoute()}">
+    <app-sidebar *ngIf="showSidebar()"></app-sidebar>
+    <main class="content-area" [ngClass]="{'with-sidebar': showSidebar()}">
       <router-outlet></router-outlet>
     </main>
   </div>
-  
-  <app-footer></app-footer>
 </div>

@@ -1,0 +1,28 @@
+package com.enicarthage.library.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/basic")
+public class BasicTestController {
+    
+    @GetMapping("/ping")
+    public ResponseEntity<Map<String, String>> ping() {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "pong");
+        response.put("status", "ok");
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/echo")
+    public ResponseEntity<Map<String, Object>> echo(@RequestBody Map<String, Object> data) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("echo", data);
+        response.put("received", true);
+        return ResponseEntity.ok(response);
+    }
+}

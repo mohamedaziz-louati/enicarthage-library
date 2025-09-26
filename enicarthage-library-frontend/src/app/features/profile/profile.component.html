@@ -1,13 +1,27 @@
 <div class="user-container">
-  <h1>User Portal</h1>
+  <h1>My Profile</h1>
 
   <div class="tabs">
+    <div class="tab" [class.active]="activeTab==='info'" (click)="showTab('info')">My Info</div>
     <div class="tab" [class.active]="activeTab==='books'" (click)="showTab('books')">Book Reservations</div>
-    <div class="tab" [class.active]="activeTab==='events'" (click)="showTab('events')">Upcoming Events</div>
+    <div class="tab" [class.active]="activeTab==='events'" (click)="showTab('events')">My Events</div>
+  </div>
+
+  <div class="user-section" *ngIf="activeTab==='info'">
+    <h2>Edit Profile</h2>
+    <div class="search-filter-bar">
+      <input class="search-input" placeholder="First Name" [(ngModel)]="profile.firstName" />
+      <input class="search-input" placeholder="Last Name" [(ngModel)]="profile.lastName" />
+      <input class="search-input" placeholder="Email" [(ngModel)]="profile.email" />
+      <input class="search-input" placeholder="Phone Number" [(ngModel)]="profile.phoneNumber" />
+      <button class="search-button" (click)="saveProfile()" [disabled]="isSavingProfile">
+        {{ isSavingProfile ? 'Saving...' : 'Save' }}
+      </button>
+    </div>
   </div>
 
   <div class="user-section" *ngIf="activeTab==='books'">
-    <h2>Reserve a Book</h2>
+    <h2>My Borrowings</h2>
     <div class="loading" *ngIf="isLoadingBooks"><div class="loading-spinner">Loading...</div></div>
     <table class="books-table" *ngIf="!isLoadingBooks">
       <thead>
@@ -15,22 +29,26 @@
           <th>Title</th>
           <th>Author</th>
           <th>Status</th>
+          <th>Due Date</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let b of availableBooks">
-          <td>{{ b.title }}</td>
-          <td>{{ b.author }}</td>
-          <td><span class="book-status available">Available</span></td>
-          <td><button class="action-button reserve">Reserve</button></td>
+        <tr *ngFor="let b of myBorrowings">
+          <td>{{ b.book?.title || '-' }}</td>
+          <td>{{ b.book?.author || '-' }}</td>
+          <td><span class="book-status available">{{ b.status }}</span></td>
+          <td>{{ b.dueDate | date:'yyyy-MM-dd' }}</td>
+          <td>
+            <button class="action-button reserve" (click)="returnBook(b.id)" [disabled]="b.status !== 'ACTIVE'">Return</button>
+          </td>
         </tr>
       </tbody>
     </table>
   </div>
 
   <div class="user-section" *ngIf="activeTab==='events'">
-    <h2>Upcoming Events</h2>
+    <h2>My Event Registrations</h2>
     <div class="loading" *ngIf="isLoadingEvents"><div class="loading-spinner">Loading...</div></div>
     <table class="events-table" *ngIf="!isLoadingEvents">
       <thead>
@@ -39,14 +57,16 @@
           <th>Date</th>
           <th>Location</th>
           <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let ev of upcomingEvents">
-          <td>{{ ev.name }}</td>
-          <td>{{ ev.startDate | date:'yyyy-MM-dd' }}</td>
-          <td>{{ ev.location || '-' }}</td>
+        <tr *ngFor="let r of myRegistrations">
+          <td>{{ r.event?.title }}</td>
+          <td>{{ r.event?.startDate | date:'yyyy-MM-dd' }}</td>
+          <td>{{ r.event?.location || '-' }}</td>
           <td><span class="event-status upcoming">Upcoming</span></td>
+          <td><button class="action-button reserve" (click)="unregisterEvent(r.event?.id)">Unregister</button></td>
         </tr>
       </tbody>
     </table>

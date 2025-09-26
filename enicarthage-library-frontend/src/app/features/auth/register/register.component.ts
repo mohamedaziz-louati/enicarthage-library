@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -16,63 +17,93 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterModule,
-    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule
+    MatCheckboxModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
-export class RegisterComponent {
-  registerForm: FormGroup;
-  hidePassword = true;
+export class RegisterComponent implements OnInit {
+  registerForm!: FormGroup;
   isLoading = false;
+  hidePassword = true;
 
   constructor(
-    fb: FormBuilder,
-    private authService: AuthService,
+    private fb: FormBuilder,
     private router: Router,
-    private snackBar: MatSnackBar
-  ) {
-    this.registerForm = fb.group({
+    private snackBar: MatSnackBar,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.registerForm = this.fb.group({
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      studentId: [''],
+      phoneNumber: [''],
+      agreeTerms: [false, Validators.requiredTrue]
     });
   }
 
-  onSubmit() {
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
-      return;
+  onSubmit(): void {
+    if (this.registerForm.valid) {
+      this.isLoading = true;
+      const payload = {
+        username: this.registerForm.value.username,
+        email: this.registerForm.value.email,
+        password: this.registerForm.value.password,
+        firstName: this.registerForm.value.firstName,
+        lastName: this.registerForm.value.lastName,
+        studentId: this.registerForm.value.studentId || undefined,
+        phoneNumber: this.registerForm.value.phoneNumber || undefined
+      };
+      this.authService.register(payload).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.snackBar.open('Registration successful!', 'Close', { duration: 3000 });
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const message = err?.error?.error || 'Registration failed';
+          this.snackBar.open(message, 'Close', { duration: 3500 });
+        }
+      });
     }
-    this.isLoading = true;
-    this.authService.register(this.registerForm.value).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.snackBar.open('Registration successful. Please login.', 'Close', { duration: 3000 });
-        this.router.navigate(['/login']);
-      },
-      error: () => {
-        this.isLoading = false;
-        this.snackBar.open('Registration failed. Please try again.', 'Close', { duration: 4000 });
-      }
-    });
   }
 
-  getErrorMessage(fieldName: string): string {
-    const control = this.registerForm.get(fieldName);
-    if (control?.hasError('required')) return 'Required';
-    if (control?.hasError('email')) return 'Invalid email';
-    if (control?.hasError('minlength')) {
-      const len = control.errors?.['minlength'].requiredLength;
-      return `Min length ${len}`;
+  navigateToLogin(event: Event): void {
+    event.preventDefault();
+    console.log('Navigating to login...');
+    this.router.navigate(['/login']).then(
+      success => console.log('Navigation success:', success),
+      error => console.log('Navigation error:', error)
+    );
+  }
+
+  // Helper method for template
+  getErrorMessage(field: string): string {
+    const control = this.registerForm.get(field);
+    if (control && control.errors) {
+      if (control.errors['required']) {
+        return `${field} is required`;
+      }
+      if (control.errors['email']) {
+        return 'Please enter a valid email';
+      }
+      if (control.errors['minlength']) {
+        return `${field} must be at least ${control.errors['minlength'].requiredLength} characters`;
+      }
+      if (control.errors['requiredTrue']) {
+        return 'You must agree to the terms and conditions';
+      }
     }
     return '';
   }

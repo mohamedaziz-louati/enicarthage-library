@@ -9,6 +9,7 @@ export interface UserItem {
   email: string;
   firstName: string;
   lastName: string;
+  phoneNumber?: string;
   role: 'ADMIN' | 'LIBRARIAN' | 'STUDENT' | 'FACULTY';
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt?: string;
@@ -28,9 +29,13 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  // Note: backend pagination for /api/users is a placeholder
-  getAll(): Observable<UserItem[]> {
-    return this.http.get<UserItem[]>(this.API);
+  getAll(page = 0, size = 20, sortBy = 'firstName', sortDir: 'asc' | 'desc' = 'asc'): Observable<PagedResponse<UserItem>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size)
+      .set('sortBy', sortBy)
+      .set('sortDir', sortDir);
+    return this.http.get<PagedResponse<UserItem>>(this.API, { params });
   }
 
   getById(id: number): Observable<UserItem> {
@@ -50,6 +55,10 @@ export class UserService {
     return this.http.put(`${this.API}/${id}`, payload);
   }
 
+  create(payload: Partial<UserItem> & { password: string }): Observable<any> {
+    return this.http.post(this.API, payload);
+  }
+
   updateStatus(id: number, status: string): Observable<any> {
     const params = new HttpParams().set('status', status);
     return this.http.patch(`${this.API}/${id}/status`, null, { params });
@@ -58,5 +67,13 @@ export class UserService {
   updateRole(id: number, role: string): Observable<any> {
     const params = new HttpParams().set('role', role);
     return this.http.patch(`${this.API}/${id}/role`, null, { params });
+  }
+
+  getProfile(): Observable<UserItem> {
+    return this.http.get<UserItem>(`${this.API}/profile`);
+  }
+
+  updateProfile(payload: Partial<UserItem> & { password?: string }): Observable<any> {
+    return this.http.put(`${this.API}/profile`, payload);
   }
 }

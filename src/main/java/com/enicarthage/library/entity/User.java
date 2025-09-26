@@ -4,18 +4,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +28,7 @@ public class User implements UserDetails {
     
     @NotBlank
     @Size(max = 100)
+    @Column(nullable = false)
     private String password;
     
     @NotBlank
@@ -45,58 +40,28 @@ public class User implements UserDetails {
     private String lastName;
     
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(nullable = false)
+    private Role role = Role.STUDENT;
     
     @Enumerated(EnumType.STRING)
-    private UserStatus status;
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.ACTIVE;
     
-    @Column(name = "student_id", unique = true)
     private String studentId;
-    
-    @Column(name = "phone_number")
     private String phoneNumber;
     
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
     
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Borrowing> borrowings;
-    
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Reservation> reservations;
-    
-    public User() {
-        this.createdAt = LocalDateTime.now();
-        this.status = UserStatus.ACTIVE;
+    public enum Role {
+        ADMIN, LIBRARIAN, STUDENT, FACULTY
     }
     
-    // UserDetails implementation
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
-    
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-    
-    @Override
-    public boolean isAccountNonLocked() {
-        return status != UserStatus.LOCKED;
-    }
-    
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-    
-    @Override
-    public boolean isEnabled() {
-        return status == UserStatus.ACTIVE;
+    public enum UserStatus {
+        ACTIVE, INACTIVE, SUSPENDED
     }
     
     // Getters and Setters
@@ -135,18 +100,4 @@ public class User implements UserDetails {
     
     public LocalDateTime getLastLogin() { return lastLogin; }
     public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
-    
-    public List<Borrowing> getBorrowings() { return borrowings; }
-    public void setBorrowings(List<Borrowing> borrowings) { this.borrowings = borrowings; }
-    
-    public List<Reservation> getReservations() { return reservations; }
-    public void setReservations(List<Reservation> reservations) { this.reservations = reservations; }
-    
-    public enum Role {
-        ADMIN, LIBRARIAN, STUDENT, FACULTY
-    }
-    
-    public enum UserStatus {
-        ACTIVE, INACTIVE, LOCKED, SUSPENDED
-    }
 }

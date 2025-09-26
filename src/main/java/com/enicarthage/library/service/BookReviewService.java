@@ -154,9 +154,10 @@ public class BookReviewService {
         // Calculate rating distribution
         Map<Integer, Long> ratingDistribution = new HashMap<>();
         for (int i = 1; i <= 5; i++) {
+            final int ratingValue = i;
             long count = reviews.stream()
                     .mapToInt(BookReview::getRating)
-                    .filter(rating -> rating == i)
+                    .filter(rating -> rating == ratingValue)
                     .count();
             ratingDistribution.put(i, count);
         }

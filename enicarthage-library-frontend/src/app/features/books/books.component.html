@@ -3,6 +3,13 @@
 
   <div class="books-section">
     <h2>Book List</h2>
+    <div class="search-filter-bar" *ngIf="isAdmin">
+      <input class="search-input" placeholder="Title" [(ngModel)]="newBook.title" />
+      <input class="search-input" placeholder="Author" [(ngModel)]="newBook.author" />
+      <input class="search-input" placeholder="Publisher" [(ngModel)]="newBook.publisher" />
+      <input class="search-input" placeholder="Description" [(ngModel)]="newBook.description" />
+      <button class="search-button" (click)="createBook()">Add Book</button>
+    </div>
 
     <div class="search-filter-bar">
       <input
@@ -57,17 +64,18 @@
             </span>
           </td>
           <td>
-            <button class="action-button edit" (click)="borrowBook(book)">Borrow</button>
-            <button class="action-button delete" (click)="reserveBook(book)">Reserve</button>
+            <button class="action-button edit" *ngIf="!isAdmin" (click)="borrowBook(book)">Borrow</button>
+            <button class="action-button delete" *ngIf="!isAdmin" (click)="reserveBook(book)">Reserve</button>
+            <button class="action-button delete" *ngIf="isAdmin" (click)="deleteBook(book)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
 
     <div class="pagination" *ngIf="!isLoading">
-      <button class="page-button" [disabled]="currentPage === 0" (click)="onPageChange({ pageIndex: currentPage - 1, pageSize: pageSize } as any)">Previous</button>
+      <button class="page-button" [disabled]="currentPage === 0" (click)="onPageChange({ pageIndex: currentPage - 1, pageSize: pageSize, length: totalItems })">Previous</button>
       <button class="page-button active">{{ currentPage + 1 }}</button>
-      <button class="page-button" [disabled]="(currentPage + 1) * pageSize >= totalItems" (click)="onPageChange({ pageIndex: currentPage + 1, pageSize: pageSize } as any)">Next</button>
+      <button class="page-button" [disabled]="(currentPage + 1) * pageSize >= totalItems" (click)="onPageChange({ pageIndex: currentPage + 1, pageSize: pageSize, length: totalItems })">Next</button>
     </div>
   </div>
 </div>

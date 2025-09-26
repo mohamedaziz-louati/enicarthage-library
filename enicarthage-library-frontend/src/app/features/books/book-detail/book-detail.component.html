@@ -1,0 +1,103 @@
+<div class="book-detail-container" *ngIf="book; else loadingTemplate">
+  <mat-card class="book-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div class="book-info">
+          <h1 class="book-title">{{ book.title }}</h1>
+          <p class="book-author">by {{ book.author }}</p>
+        </div>
+        <div class="book-actions">
+          <button mat-raised-button color="primary" 
+                  [disabled]="book.status !== 'AVAILABLE'"
+                  (click)="borrowBook()"
+                  class="action-button">
+            <mat-icon>book</mat-icon>
+            Borrow
+          </button>
+          <button mat-raised-button color="accent" 
+                  [disabled]="book.status !== 'AVAILABLE'"
+                  (click)="reserveBook()"
+                  class="action-button">
+            <mat-icon>bookmark</mat-icon>
+            Reserve
+          </button>
+        </div>
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="book-details">
+        <div class="detail-row">
+          <div class="detail-item">
+            <h3>ISBN</h3>
+            <p>{{ book.isbn || 'N/A' }}</p>
+          </div>
+          <div class="detail-item">
+            <h3>Category</h3>
+            <mat-chip [color]="getCategoryColor(book.category)">{{ book.category }}</mat-chip>
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-item">
+            <h3>Publisher</h3>
+            <p>{{ book.publisher }}</p>
+          </div>
+          <div class="detail-item">
+            <h3>Publication Year</h3>
+            <p>{{ book.publicationYear }}</p>
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-item">
+            <h3>Language</h3>
+            <p>{{ book.language || 'N/A' }}</p>
+          </div>
+          <div class="detail-item">
+            <h3>Pages</h3>
+            <p>{{ book.pages || 'N/A' }}</p>
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-item">
+            <h3>Price</h3>
+            <p>${{ book.price || '0.00' }}</p>
+          </div>
+          <div class="detail-item">
+            <h3>Shelf Location</h3>
+            <p>{{ book.shelfLocation || 'N/A' }}</p>
+          </div>
+        </div>
+        
+        <div class="description-section">
+          <h3>Description</h3>
+          <p>{{ book.description || 'No description available.' }}</p>
+        </div>
+        
+        <div class="availability-section">
+          <h3>Availability</h3>
+          <div class="availability-info">
+            <mat-chip [color]="getStatusColor(book.status)">{{ book.status }}</mat-chip>
+            <span class="copies-info">
+              {{ book.availableCopies }} of {{ book.totalCopies }} copies available
+            </span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div *ngIf="!book" class="loading-container">
+  <mat-spinner></mat-spinner>
+  <p>Loading book details...</p>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading book details...</p>
+  </div>
+</ng-template>

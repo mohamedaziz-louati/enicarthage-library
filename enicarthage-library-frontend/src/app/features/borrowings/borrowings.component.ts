@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BorrowingService, PagedResponse, BorrowingItem } from '../../core/services/borrowing.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-borrowings',
@@ -21,9 +22,14 @@ export class BorrowingsComponent implements OnInit {
   currentPage = 0;
   totalItems = 0;
 
-  constructor(private borrowingService: BorrowingService) {}
+  isAdmin = false;
 
-  ngOnInit(): void { this.load(); }
+  constructor(private borrowingService: BorrowingService, private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.isAdmin = this.authService.hasAnyRole(['ADMIN', 'LIBRARIAN']);
+    this.load();
+  }
 
   load(): void {
     this.isLoading = true;
@@ -35,8 +41,19 @@ export class BorrowingsComponent implements OnInit {
     };
     const onError = () => { this.isLoading = false; };
 
-    // Backend doesn't provide a general search for borrowings in our controller; use getAll
-    this.borrowingService.getAll(page, size, 'borrowDate', 'desc').subscribe({ next: onSuccess, error: onError });
+    if (this.isAdmin) {
+      this.borrowingService.getAll(page, size, 'borrowDate', 'desc').subscribe({ next: onSuccess, error: onError });
+      return;
+    }
+
+    this.borrowingService.getMyBorrowings().subscribe({
+      next: (rows) => {
+        this.rows = rows;
+        this.totalItems = rows.length;
+        this.isLoading = false;
+      },
+      error: onError
+    });
   }
 
   getFilteredRows(): BorrowingItem[] {

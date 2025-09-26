@@ -3,6 +3,13 @@
 
   <div class="events-section">
     <h2>Event List</h2>
+    <div class="search-filter-bar" *ngIf="isAdmin">
+      <input class="search-input" placeholder="Title" [(ngModel)]="newEvent.title" />
+      <input class="search-input" placeholder="Description" [(ngModel)]="newEvent.description" />
+      <input class="search-input" placeholder="YYYY-MM-DDTHH:mm:ss" [(ngModel)]="newEvent.startDate" />
+      <input class="search-input" placeholder="YYYY-MM-DDTHH:mm:ss" [(ngModel)]="newEvent.endDate" />
+      <button class="search-button" (click)="createEvent()">Add Event</button>
+    </div>
 
     <div class="search-filter-bar">
       <input
@@ -34,19 +41,25 @@
           <th>Date</th>
           <th>Location</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let ev of getPagedEvents()">
-          <td>{{ ev.name }}</td>
+          <td>{{ ev.title }}</td>
           <td>{{ ev.startDate | date:'yyyy-MM-dd' }}</td>
           <td>{{ ev.location || '-' }}</td>
           <td>
             <span class="event-status" [ngClass]="{
               'upcoming': (ev.status || '').toLowerCase() === 'upcoming',
-              'past': (ev.status || '').toLowerCase() === 'past',
+              'past': (ev.status || '').toLowerCase() === 'past' || (ev.status || '').toLowerCase() === 'completed',
               'cancelled': (ev.status || '').toLowerCase() === 'cancelled'
             }">{{ ev.status || 'upcoming' }}</span>
+          </td>
+          <td>
+            <button class="action-button edit" *ngIf="!isAdmin" (click)="registerEvent(ev)">Reserve</button>
+            <button class="action-button return" *ngIf="!isAdmin" (click)="unregisterEvent(ev)">Cancel</button>
+            <button class="action-button delete" *ngIf="isAdmin" (click)="deleteEvent(ev)">Delete</button>
           </td>
         </tr>
       </tbody>

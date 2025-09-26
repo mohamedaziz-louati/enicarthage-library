@@ -1,0 +1,109 @@
+package com.enicarthage.library.controller;
+
+import com.enicarthage.library.entity.User;
+import com.enicarthage.library.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/no-security-auth")
+public class NoSecurityAuthController {
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        try {
+            String username = credentials.get("username");
+            String password = credentials.get("password");
+            
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            
+            if (userOpt.isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "User not found");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            User user = userOpt.get();
+            
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Invalid password");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            // Create response similar to the original AuthController
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", "simple-token-" + System.currentTimeMillis());
+            response.put("type", "Bearer");
+            response.put("id", user.getId());
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("firstName", user.getFirstName());
+            response.put("lastName", user.getLastName());
+            response.put("role", user.getRole());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Login failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+    
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Map<String, String> userData) {
+        try {
+            User user = new User();
+            user.setUsername(userData.get("username"));
+            user.setEmail(userData.get("email"));
+            user.setPassword(userData.get("password"));
+            user.setFirstName(userData.get("firstName"));
+            user.setLastName(userData.get("lastName"));
+            user.setStudentId(userData.get("studentId"));
+            user.setPhoneNumber(userData.get("phoneNumber"));
+            user.setRole(User.Role.STUDENT);
+            
+            // Check if user exists
+            if (userRepository.existsByUsername(user.getUsername())) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Username already exists");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            if (userRepository.existsByEmail(user.getEmail())) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Email already exists");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            // Encode password and save
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            User createdUser = userRepository.save(user);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User registered successfully");
+            response.put("userId", createdUser.getId());
+            response.put("username", createdUser.getUsername());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Registration failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+}
