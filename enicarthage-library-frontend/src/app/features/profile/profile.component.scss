@@ -1,11 +1,537 @@
-.user-container { max-width: 1400px; margin: 0 auto; }
-.tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #dee2e6; }
-.tab { padding: 12px 24px; font-size: 1.1rem; font-weight: 500; color: #6c757d; cursor: pointer; }
-.tab.active { color: #1976d2; border-bottom: 3px solid #1976d2; }
-.user-section { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-.books-table, .events-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
-.books-table th, .books-table td, .events-table th, .events-table td { padding: 16px; text-align: left; border-bottom: 1px solid #dee2e6; }
-.books-table th, .events-table th { background: #f1f3f5; font-weight: 500; font-size: 0.9rem; text-transform: uppercase; color: #6c757d; }
-.book-status.available { background: #d4edda; color: #155724; padding: 6px 16px; border-radius: 20px; }
-.event-status.upcoming { background: #d4edda; color: #155724; padding: 6px 16px; border-radius: 20px; }
-.action-button.reserve { padding: 8px 16px; border: none; border-radius: 6px; background: #28a745; color: #fff; cursor: pointer; }
+// ─── Variables ────────────────────────────────────────────────────────────────
+
+$primary: #667eea;
+$primary-dark: #764ba2;
+$primary-light: #eef0fd;
+$success: #0f9d72;
+$success-light: #e6f7f2;
+$warning: #e07b00;
+$warning-light: #fff4e5;
+$danger: #d63a3a;
+$danger-light: #fdeaea;
+$text-primary: #111827;
+$text-secondary: #6b7280;
+$text-muted: #9ca3af;
+$border: #e5e7eb;
+$bg-page: #f5f6fa;
+$bg-card: #ffffff;
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+
+// ─── Container ────────────────────────────────────────────────────────────────
+
+.user-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 36px 32px;
+  animation: pageFadeIn 0.35s ease-out both;
+
+  > h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 28px 0;
+    letter-spacing: -0.3px;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 3px;
+      margin-top: 8px;
+      background: linear-gradient(90deg, $primary, $primary-dark);
+      border-radius: 2px;
+    }
+  }
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  background: #ededf5;
+  border-radius: $radius-md;
+  padding: 5px;
+  width: fit-content;
+  border: none;
+}
+
+.tab {
+  padding: 9px 22px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $text-secondary;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+
+  &:hover:not(.active) {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  &.active {
+    background: $bg-card;
+    color: $primary;
+    box-shadow: $shadow-sm;
+    font-weight: 600;
+  }
+}
+
+// ─── Section wrapper ──────────────────────────────────────────────────────────
+
+.user-section {
+  background: $bg-card;
+  border-radius: $radius-lg;
+  padding: 28px 32px;
+  box-shadow: $shadow-md;
+  border: 0.5px solid $border;
+  animation: sectionIn 0.25s ease-out both;
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 24px 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid $border;
+    letter-spacing: -0.1px;
+  }
+}
+
+// ─── Profile Form ─────────────────────────────────────────────────────────────
+
+.profile-form {
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $text-primary;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+}
+
+.search-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  .search-input {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    color: $text-primary;
+    background: #fafafa;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: $text-muted;
+      font-size: 0.875rem;
+    }
+
+    &:hover {
+      border-color: darken($border, 8%);
+      background: #fff;
+    }
+
+    &:focus {
+      border-color: $primary;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    }
+
+    &[readonly] {
+      background: #f5f5f5;
+      color: $text-muted;
+      cursor: not-allowed;
+    }
+  }
+
+  .search-button {
+    padding: 11px 32px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+    &:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+}
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: $radius-sm;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &.alert-error {
+    background: $danger-light;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.2);
+  }
+
+  &.alert-success {
+    background: $success-light;
+    color: $success;
+    border: 1px solid rgba($success, 0.2);
+  }
+}
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.loading-spinner {
+  font-size: 0.875rem;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border: 2px solid $border;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+// ─── Tables ───────────────────────────────────────────────────────────────────
+
+.table-container {
+  overflow-x: auto;
+}
+
+.books-table,
+.events-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr {
+    background: #f8f9fb;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba($border, 0.7);
+    transition: background 0.12s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: #fafbff;
+    }
+  }
+
+  td {
+    padding: 14px 16px;
+    color: $text-primary;
+    font-size: 0.875rem;
+    vertical-align: middle;
+
+    &:first-child {
+      font-weight: 500;
+    }
+  }
+}
+
+// ─── Info displays ─────────────────────────────────────────────────────────────
+
+.book-info,
+.event-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  i {
+    color: $primary;
+    font-size: 0.875rem;
+  }
+}
+
+.due-date {
+  font-weight: 500;
+
+  &.overdue {
+    color: $danger;
+    font-weight: 600;
+  }
+}
+
+// ─── Status badges ────────────────────────────────────────────────────────────
+
+.book-status,
+.event-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+
+.book-status {
+  &.available, &.ACTIVE {
+    background: $success-light;
+    color: $success;
+    &::before { background: $success; }
+  }
+
+  &.RETURNED {
+    background: #f1f3f5;
+    color: $text-secondary;
+    &::before { background: $text-muted; }
+  }
+
+  &.OVERDUE {
+    background: $danger-light;
+    color: $danger;
+    &::before { background: $danger; }
+  }
+}
+
+.event-status {
+  &.upcoming {
+    background: $primary-light;
+    color: $primary;
+    &::before { background: $primary; }
+  }
+
+  &.ongoing {
+    background: $success-light;
+    color: $success;
+    &::before { background: $success; }
+  }
+
+  &.past {
+    background: #f1f3f5;
+    color: $text-secondary;
+    &::before { background: $text-muted; }
+  }
+}
+
+// ─── Action buttons ───────────────────────────────────────────────────────────
+
+.action-button {
+  padding: 7px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  &.reserve {
+    background: $primary-light;
+    color: $primary;
+
+    &:hover:not(:disabled) {
+      background: $primary;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &.danger {
+    background: $danger-light;
+    color: $danger;
+
+    &:hover:not(:disabled) {
+      background: $danger;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(214, 58, 58, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+  color: $text-muted;
+
+  i {
+    font-size: 2.5rem;
+    margin-bottom: 14px;
+    display: block;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 0.9rem;
+    margin: 0 0 20px 0;
+  }
+
+  .browse-link {
+    display: inline-block;
+    padding: 8px 20px;
+    background: $primary;
+    color: white;
+    text-decoration: none;
+    border-radius: $radius-sm;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: darken($primary, 5%);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .user-container {
+    padding: 20px 16px;
+  }
+
+  .user-section {
+    padding: 20px 16px;
+  }
+
+  .profile-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    width: 100%;
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 12px;
+      font-size: 0.8rem;
+    }
+  }
+
+  .books-table,
+  .events-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    th, td {
+      padding: 10px 12px;
+    }
+  }
+}
+
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

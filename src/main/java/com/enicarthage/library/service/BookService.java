@@ -19,8 +19,8 @@ public class BookService {
     
     public Book createBook(Book book) {
         if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
-            List<Book> existingBooks = bookRepository.findByIsbn(book.getIsbn());
-            if (!existingBooks.isEmpty()) {
+            Optional<Book> existingBook = bookRepository.findByIsbn(book.getIsbn());
+            if (existingBook.isPresent()) {
                 throw new RuntimeException("Book with ISBN already exists");
             }
         }
@@ -38,8 +38,8 @@ public class BookService {
         
         if (bookDetails.getIsbn() != null && !bookDetails.getIsbn().isEmpty() && 
             !bookDetails.getIsbn().equals(book.getIsbn())) {
-            List<Book> existingBooks = bookRepository.findByIsbn(bookDetails.getIsbn());
-            if (!existingBooks.isEmpty()) {
+            Optional<Book> existingBook = bookRepository.findByIsbn(bookDetails.getIsbn());
+            if (existingBook.isPresent()) {
                 throw new RuntimeException("Book with ISBN already exists");
             }
         }

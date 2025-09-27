@@ -1,85 +1,110 @@
 <div class="users-container">
-  <div class="page-header">
-    <h1>User Management</h1>
-    <div class="header-actions">
-      <button mat-raised-button class="add-btn" (click)="openAddUserDialog()">
-        <mat-icon>add</mat-icon>
-        Add User
-      </button>
+  <h1>Users Management</h1>
+
+  <div class="users-section">
+    <h2>User List</h2>
+    <div class="search-filter-bar" *ngIf="isAdmin">
+      <input class="search-input" placeholder="First Name" [(ngModel)]="newUser.firstName" />
+      <input class="search-input" placeholder="Last Name" [(ngModel)]="newUser.lastName" />
+      <input class="search-input" placeholder="Username" [(ngModel)]="newUser.username" />
+      <input class="search-input" placeholder="Email" [(ngModel)]="newUser.email" />
+      <input class="search-input" placeholder="Password" [(ngModel)]="newUser.password" />
+      <select class="filter-select" [(ngModel)]="newUser.role">
+        <option value="">Select Role</option>
+        <option value="ADMIN">Admin</option>
+        <option value="LIBRARIAN">Librarian</option>
+        <option value="STUDENT">Student</option>
+        <option value="FACULTY">Faculty</option>
+      </select>
+      <button class="search-button" (click)="createUser()">Add User</button>
     </div>
-  </div>
 
-  <div class="search-section">
-    <mat-form-field appearance="outline" class="search-field">
-      <input matInput placeholder="First name" [(ngModel)]="newUser.firstName">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="search-field">
-      <input matInput placeholder="Last name" [(ngModel)]="newUser.lastName">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="search-field">
-      <input matInput placeholder="Username" [(ngModel)]="newUser.username">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="search-field">
-      <input matInput placeholder="Email" [(ngModel)]="newUser.email">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="search-field">
-      <input matInput type="password" placeholder="Password" [(ngModel)]="newUser.password">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-select [(ngModel)]="newUser.role">
-        <mat-option value="ADMIN">Admin</mat-option>
-        <mat-option value="LIBRARIAN">Librarian</mat-option>
-        <mat-option value="STUDENT">Student</mat-option>
-        <mat-option value="FACULTY">Faculty</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
+    <div class="search-filter-bar">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search users by name, username or email..."
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+      />
 
-  <div class="search-section">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput placeholder="Search users..." [(ngModel)]="searchTerm" (keyup)="onSearch()">
-    </mat-form-field>
-    
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-select matNativeControl [(ngModel)]="selectedRole" (selectionChange)="onFilterChange()">
-        <mat-option value="">All Roles</mat-option>
-        <mat-option value="ADMIN">Admin</mat-option>
-        <mat-option value="LIBRARIAN">Librarian</mat-option>
-        <mat-option value="STUDENT">Student</mat-option>
-        <mat-option value="FACULTY">Faculty</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
+      <select class="filter-select" [(ngModel)]="selectedRole" (change)="onRoleChange()">
+        <option value="">All Roles</option>
+        <option value="ADMIN">Admin</option>
+        <option value="LIBRARIAN">Librarian</option>
+        <option value="STUDENT">Student</option>
+        <option value="FACULTY">Faculty</option>
+      </select>
 
-  <div class="users-grid">
-    <div class="user-card" *ngFor="let user of filteredUsers">
-      <div class="user-avatar">
-        <mat-icon>account_circle</mat-icon>
-      </div>
-      <div class="user-info">
-        <h3>{{ user.firstName }} {{ user.lastName }}</h3>
-        <p class="user-email">{{ user.email }}</p>
-        <span class="user-role" [ngClass]="getRoleClass(user.role)">{{ user.role }}</span>
-      </div>
-      <div class="user-actions">
-        <button mat-icon-button (click)="editUser(user)" class="action-btn edit">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button (click)="deleteUser(user.id)" class="action-btn delete">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </div>
+      <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+        <option value="">All Statuses</option>
+        <option value="ACTIVE">Active</option>
+        <option value="INACTIVE">Inactive</option>
+        <option value="SUSPENDED">Suspended</option>
+      </select>
+
+      <button class="search-button" (click)="onSearch()">Search</button>
+      <button class="search-button" style="background:#6c757d" (click)="clearFilters()">Clear</button>
     </div>
-  </div>
 
-  <div class="pagination" *ngIf="totalPages > 1">
-    <button mat-button [disabled]="currentPage === 0" (click)="previousPage()">
-      <mat-icon>chevron_left</mat-icon>
-    </button>
-    <span class="page-info">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
-    <button mat-button [disabled]="currentPage === totalPages - 1" (click)="nextPage()">
-      <mat-icon>chevron_right</mat-icon>
-    </button>
+    <div class="loading" *ngIf="isLoading">
+      <div class="loading-spinner">Loading...</div>
+    </div>
+
+    <table class="users-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of getPaginatedUsers()">
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span
+              class="user-role"
+              [ngClass]="{
+                'admin': user.role === 'ADMIN',
+                'librarian': user.role === 'LIBRARIAN',
+                'student': user.role === 'STUDENT',
+                'faculty': user.role === 'FACULTY'
+              }"
+            >
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <span
+              class="user-status"
+              [ngClass]="{
+                'active': user.status === 'ACTIVE',
+                'inactive': user.status === 'INACTIVE',
+                'suspended': user.status === 'SUSPENDED'
+              }"
+            >
+              {{ user.status || 'ACTIVE' }}
+            </span>
+          </td>
+          <td>
+            <button class="action-button edit" *ngIf="isAdmin" (click)="editUser(user)">Edit</button>
+            <button class="action-button delete" *ngIf="isAdmin" (click)="deleteUser(user)">Delete</button>
+            <button class="action-button return" *ngIf="!isAdmin" (click)="viewProfile(user)">Profile</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="!isLoading">
+      <button class="page-button" [disabled]="currentPage === 0" (click)="onPageChange({ pageIndex: currentPage - 1, pageSize: pageSize, length: totalItems })">Previous</button>
+      <button class="page-button active">{{ currentPage + 1 }}</button>
+      <button class="page-button" [disabled]="(currentPage + 1) * pageSize >= totalItems" (click)="onPageChange({ pageIndex: currentPage + 1, pageSize: pageSize, length: totalItems })">Next</button>
+    </div>
   </div>
 </div>

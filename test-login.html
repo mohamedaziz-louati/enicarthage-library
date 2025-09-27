@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Login Test</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:8082/api/simple-auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const result = document.getElementById('result');
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `<pre style="color: green;">SUCCESS: ${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    const errorText = await response.text();
+                    result.innerHTML = `<pre style="color: red;">ERROR ${response.status}: ${errorText}</pre>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<pre style="color: red;">NETWORK ERROR: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
@@ -17,7 +18,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     List<Book> findByAuthorContainingIgnoreCase(String author);
     
-    List<Book> findByIsbn(String isbn);
+    Optional<Book> findByIsbn(String isbn);
     
     @Query("SELECT b FROM Book b WHERE b.title LIKE %:searchTerm% OR b.author LIKE %:searchTerm% OR b.isbn LIKE %:searchTerm%")
     List<Book> findBySearchTerm(@Param("searchTerm") String searchTerm);
@@ -50,6 +51,14 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     Page<Book> findByStatus(Book.BookStatus status, Pageable pageable);
     
+    Page<Book> findByStatus(String status, Pageable pageable);
+    
     @Query("SELECT b FROM Book b WHERE (b.title LIKE %:searchTerm% OR b.author LIKE %:searchTerm% OR b.isbn LIKE %:searchTerm%)")
     Page<Book> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    @Query("SELECT b FROM Book b WHERE (b.title LIKE %:searchTerm% OR b.author LIKE %:searchTerm% OR b.isbn LIKE %:searchTerm%)")
+    Page<Book> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    @Query("SELECT DISTINCT b.category FROM Book b")
+    List<String> findAllCategories();
 }

@@ -18,6 +18,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     
     List<Event> findByStatus(Event.EventStatus status);
     
+    Page<Event> findByStatus(String status, Pageable pageable);
+    
     List<Event> findByLocationContainingIgnoreCase(String location);
     
     @Query("SELECT e FROM Event e WHERE e.startDate >= :currentDate ORDER BY e.startDate ASC")
@@ -44,10 +46,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event e WHERE e.title LIKE %:searchTerm% OR e.description LIKE %:searchTerm%")
     Page<Event> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
     
+    Page<Event> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+    
     Long countByStatus(Event.EventStatus status);
     
     Long countByType(Event.EventType type);
     
     @Query("SELECT e FROM Event e WHERE e.startDate <= :startDate AND e.endDate >= :endDate")
     List<Event> findOngoingEvents(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    
+    @Query("SELECT e FROM Event e WHERE e.startDate > :currentDate ORDER BY e.startDate ASC")
+    List<Event> findByStartDateAfterOrderByStartDateAsc(@Param("currentDate") LocalDateTime currentDate);
 }

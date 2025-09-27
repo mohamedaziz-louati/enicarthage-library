@@ -6,8 +6,15 @@
     <div class="search-filter-bar" *ngIf="isAdmin">
       <input class="search-input" placeholder="Title" [(ngModel)]="newEvent.title" />
       <input class="search-input" placeholder="Description" [(ngModel)]="newEvent.description" />
-      <input class="search-input" placeholder="YYYY-MM-DDTHH:mm:ss" [(ngModel)]="newEvent.startDate" />
-      <input class="search-input" placeholder="YYYY-MM-DDTHH:mm:ss" [(ngModel)]="newEvent.endDate" />
+      <input class="search-input" placeholder="Location" [(ngModel)]="newEvent.location" />
+      <select class="filter-select" [(ngModel)]="newEvent.type">
+        <option value="WORKSHOP">Workshop</option>
+        <option value="SEMINAR">Seminar</option>
+        <option value="CONFERENCE">Conference</option>
+        <option value="SOCIAL">Social</option>
+      </select>
+      <input type="date" class="search-input" [(ngModel)]="newEvent.startDate" />
+      <input type="date" class="search-input" [(ngModel)]="newEvent.endDate" />
       <button class="search-button" (click)="createEvent()">Add Event</button>
     </div>
 

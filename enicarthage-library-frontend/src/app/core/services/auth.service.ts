@@ -21,9 +21,16 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, credentials)
+    const loginUrl = `${this.API_URL}/simple-auth/login`;
+    console.log('=== Frontend Login Debug ===');
+    console.log('API_URL:', this.API_URL);
+    console.log('Login URL:', loginUrl);
+    console.log('Credentials:', credentials);
+    
+    return this.http.post<LoginResponse>(loginUrl, credentials)
       .pipe(
         tap(response => {
+          console.log('Login response:', response);
           this.setToken(response.token);
           this.setCurrentUser(response);
           this.isAuthenticatedSubject.next(true);
@@ -32,7 +39,18 @@ export class AuthService {
   }
 
   register(userData: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.API_URL}/auth/register`, userData);
+    const registerUrl = `${this.API_URL}/simple-auth/register`;
+    console.log('=== Frontend Register Debug ===');
+    console.log('API_URL:', this.API_URL);
+    console.log('Register URL:', registerUrl);
+    console.log('User Data:', userData);
+    
+    return this.http.post(registerUrl, userData)
+      .pipe(
+        tap(response => {
+          console.log('Register response:', response);
+        })
+      );
   }
 
   logout(): void {
@@ -42,7 +60,7 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/auth/me`);
+    return this.http.get<User>(`${this.API_URL}/simple-auth/me`);
   }
 
   getToken(): string | null {

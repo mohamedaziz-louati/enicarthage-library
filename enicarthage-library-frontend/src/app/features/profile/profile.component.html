@@ -7,68 +7,221 @@
     <div class="tab" [class.active]="activeTab==='events'" (click)="showTab('events')">My Events</div>
   </div>
 
+  <!-- Profile Tab -->
   <div class="user-section" *ngIf="activeTab==='info'">
     <h2>Edit Profile</h2>
-    <div class="search-filter-bar">
-      <input class="search-input" placeholder="First Name" [(ngModel)]="profile.firstName" />
-      <input class="search-input" placeholder="Last Name" [(ngModel)]="profile.lastName" />
-      <input class="search-input" placeholder="Email" [(ngModel)]="profile.email" />
-      <input class="search-input" placeholder="Phone Number" [(ngModel)]="profile.phoneNumber" />
-      <button class="search-button" (click)="saveProfile()" [disabled]="isSavingProfile">
-        {{ isSavingProfile ? 'Saving...' : 'Save' }}
-      </button>
+    
+    <!-- Loading state -->
+    <div class="loading" *ngIf="isLoadingProfile">
+      <div class="loading-spinner">Loading profile...</div>
+    </div>
+
+    <!-- Profile form -->
+    <div class="profile-form" *ngIf="!isLoadingProfile">
+      <!-- Error and Success Messages -->
+      <div class="alert alert-error" *ngIf="profileError">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ profileError }}
+      </div>
+      
+      <div class="alert alert-success" *ngIf="profileSuccess">
+        <i class="fas fa-check-circle"></i>
+        {{ profileSuccess }}
+      </div>
+
+      <div class="search-filter-bar">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Username</label>
+            <input class="search-input" placeholder="Username" [(ngModel)]="profile.username" readonly />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <input class="search-input" placeholder="Role" [(ngModel)]="profile.role" readonly />
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input class="search-input" placeholder="First Name" [(ngModel)]="profile.firstName" />
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input class="search-input" placeholder="Last Name" [(ngModel)]="profile.lastName" />
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email *</label>
+            <input class="search-input" type="email" placeholder="Email" [(ngModel)]="profile.email" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input class="search-input" placeholder="Phone Number" [(ngModel)]="profile.phoneNumber" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>New Password</label>
+            <input class="search-input" type="password" placeholder="Leave blank to keep current" [(ngModel)]="profile.password" />
+          </div>
+          <div class="form-group">
+            <label>Confirm Password</label>
+            <input class="search-input" type="password" placeholder="Confirm new password" [(ngModel)]="profile.confirmPassword" />
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button class="search-button" (click)="saveProfile()" [disabled]="isSavingProfile || !hasUnsavedChanges()">
+            {{ isSavingProfile ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Books Tab -->
   <div class="user-section" *ngIf="activeTab==='books'">
     <h2>My Books</h2>
-    <div class="loading" *ngIf="isLoadingBooks"><div class="loading-spinner">Loading...</div></div>
-    <table class="books-table" *ngIf="!isLoadingBooks">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Status</th>
-          <th>Due Date</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let b of myBorrowings">
-          <td>{{ b.book?.title || '-' }}</td>
-          <td>{{ b.book?.author || '-' }}</td>
-          <td><span class="book-status available">{{ b.status }}</span></td>
-          <td>{{ b.dueDate | date:'yyyy-MM-dd' }}</td>
-          <td>
-            <button class="action-button reserve" (click)="returnBook(b.id)" [disabled]="b.status !== 'ACTIVE'">Return</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    
+    <!-- Error and Success Messages -->
+    <div class="alert alert-error" *ngIf="booksError">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ booksError }}
+    </div>
+    
+    <div class="alert alert-success" *ngIf="booksSuccess">
+      <i class="fas fa-check-circle"></i>
+      {{ booksSuccess }}
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading" *ngIf="isLoadingBooks">
+      <div class="loading-spinner">Loading your books...</div>
+    </div>
+
+    <!-- Books table -->
+    <div class="table-container" *ngIf="!isLoadingBooks">
+      <table class="books-table" *ngIf="myBorrowings.length > 0">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Status</th>
+            <th>Borrow Date</th>
+            <th>Due Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of myBorrowings">
+            <td>
+              <div class="book-info">
+                <i class="fas fa-book"></i>
+                <span>{{ b.book?.title || '-' }}</span>
+              </div>
+            </td>
+            <td>{{ b.book?.author || '-' }}</td>
+            <td>
+              <span class="book-status" [ngClass]="getBookStatusClass(b.status)">
+                {{ b.status }}
+              </span>
+            </td>
+            <td>{{ formatDate(b.borrowDate) }}</td>
+            <td>
+              <span class="due-date" [ngClass]="{ 'overdue': b.status === 'OVERDUE' }">
+                {{ formatDate(b.dueDate) }}
+              </span>
+            </td>
+            <td>
+              <button class="action-button reserve" 
+                      (click)="returnBook(b.id)" 
+                      [disabled]="!canReturnBook(b)">
+                Return
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="myBorrowings.length === 0">
+        <i class="fas fa-book"></i>
+        <p>You don't have any borrowed books yet.</p>
+        <a routerLink="/books" class="browse-link">Browse Books</a>
+      </div>
+    </div>
   </div>
 
+  <!-- Events Tab -->
   <div class="user-section" *ngIf="activeTab==='events'">
     <h2>My Event Registrations</h2>
-    <div class="loading" *ngIf="isLoadingEvents"><div class="loading-spinner">Loading...</div></div>
-    <table class="events-table" *ngIf="!isLoadingEvents">
-      <thead>
-        <tr>
-          <th>Event Name</th>
-          <th>Date</th>
-          <th>Location</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of myRegistrations">
-          <td>{{ r.event?.title }}</td>
-          <td>{{ r.event?.startDate | date:'yyyy-MM-dd' }}</td>
-          <td>{{ r.event?.location || '-' }}</td>
-          <td><span class="event-status upcoming">Upcoming</span></td>
-          <td><button class="action-button reserve" (click)="unregisterEvent(r.event?.id)">Unregister</button></td>
-        </tr>
-      </tbody>
-    </table>
+    
+    <!-- Error and Success Messages -->
+    <div class="alert alert-error" *ngIf="eventsError">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ eventsError }}
+    </div>
+    
+    <div class="alert alert-success" *ngIf="eventsSuccess">
+      <i class="fas fa-check-circle"></i>
+      {{ eventsSuccess }}
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading" *ngIf="isLoadingEvents">
+      <div class="loading-spinner">Loading your events...</div>
+    </div>
+
+    <!-- Events table -->
+    <div class="table-container" *ngIf="!isLoadingEvents">
+      <table class="events-table" *ngIf="myRegistrations.length > 0">
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of myRegistrations">
+            <td>
+              <div class="event-info">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{ r.event?.title || '-' }}</span>
+              </div>
+            </td>
+            <td>{{ formatDate(r.event?.startDate) }}</td>
+            <td>{{ r.event?.startDate | date:'HH:mm' || '-' }}</td>
+            <td>{{ r.event?.location || '-' }}</td>
+            <td>
+              <span class="event-status" [ngClass]="getEventStatus(r)">
+                {{ getEventStatus(r) }}
+              </span>
+            </td>
+            <td>
+              <button class="action-button danger" 
+                      (click)="unregisterEvent(r.event?.id)" 
+                      [disabled]="!canUnregisterEvent(r)">
+                Unregister
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="myRegistrations.length === 0">
+        <i class="fas fa-calendar-alt"></i>
+        <p>You haven't registered for any events yet.</p>
+        <a routerLink="/events" class="browse-link">Browse Events</a>
+      </div>
+    </div>
   </div>
 </div>

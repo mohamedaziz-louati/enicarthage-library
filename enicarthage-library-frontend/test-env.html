@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Environment Test</title>
+</head>
+<body>
+    <h1>Frontend Environment Test</h1>
+    <div id="env-info"></div>
+
+    <script type="module">
+        // This will help us verify the environment configuration
+        import { environment } from './src/environments/environment.js';
+        
+        const envInfo = document.getElementById('env-info');
+        envInfo.innerHTML = `
+            <h2>Environment Configuration:</h2>
+            <pre>${JSON.stringify(environment, null, 2)}</pre>
+            <h2>API URL Test:</h2>
+            <p>API URL: ${environment.apiUrl}</p>
+            <p>Login URL: ${environment.apiUrl}/api/simple-auth/login</p>
+        `;
+    </script>
+</body>
+</html>
